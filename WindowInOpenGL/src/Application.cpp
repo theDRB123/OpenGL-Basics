@@ -123,7 +123,7 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
 
 	GLFWwindow* window;
-
+	
 	/* Initialize the library */
 	if (!glfwInit())
 		return -1;
@@ -140,7 +140,7 @@ int main(void)
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
-
+	glfwSwapInterval(1);
 	glewInit();
 
 	if (glewInit() != GLEW_OK)
@@ -167,7 +167,10 @@ int main(void)
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, 0);
 
-
+	unsigned int vao;
+	glGenVertexArrays(1,&vao);
+	glBindVertexArray(vao);
+	
 	unsigned int buffer;
 	//this will create a buffer and allot it an id   will be stored in buffer(unsigned int)
 	glGenBuffers(1, &buffer);
@@ -191,7 +194,7 @@ int main(void)
 
 	ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
 	/*std::cout << "Vertex Shader" << std::endl;
-	std::cout << source.VertexSource << std::endl;
+	std::cout << source.VertexSource << std::endl; 
 	std::cout << "fragment Shader" << std::endl;
 	std::cout << source.FragmentSource << std::endl;*/
 
@@ -200,15 +203,53 @@ int main(void)
 	unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
 	glUseProgram(shader);
 
+	// after using the required shader, we will define the uniforms for it
+	// as it is required that we have a binded shader before we can define the uniforms
+
+	int location = glGetUniformLocation(shader, "u_color");
+	//ASSERT(location != -1);
+	glUniform4f(location, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	float red = 0.0f;
+	float blue = 0.0f;
+	float green = 0.0f;
+	float increment = 0.005f;
+
+
+	// unbinding all the attributes before the loop
+	glBindVertexArray(0);
+	glUseProgram(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
 		/* Render here */
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		glUseProgram(shader);
+		//glBindBuffer(GL_ARRAY_BUFFER, buffer);
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		/*glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);*/
+
+		glUniform4f(location, red, 0.5, 0.5, 1.0f);
+		if (red> 1.0f) {
+			increment = -0.005f;
+		}
+		else if (red < 0.0f) {
+			increment = 0.005f;
+		}
+		red += increment;
+		blue += blue*blue*increment*0.001 + increment;
+		green += increment;
+
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		//how can i draw a square?
-
+		
 		//note: we need to write GLCall inside GLCall  
 		glDrawElements(GL_TRIANGLES, 6 , GL_UNSIGNED_INT , nullptr);
 		/* Swap front and back buffers */
