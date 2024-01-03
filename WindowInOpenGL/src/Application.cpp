@@ -5,42 +5,11 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-
-//Debugging using glGetError()
-//creating an assertion
-#define ASSERT(x) if (!(x)) __debugbreak(); 
-#define GLCall(x) GLClearError();\
-	x;\
-	ASSERT(GLLogCall(#x, __FILE__ , __LINE__));
-//creating a function to clear the errors
-static void GLClearError() {
-	while(glGetError() != GL_NO_ERROR);
-}
-static bool GLLogCall(const char* function, const char* file, int line) {
-	while (GLenum error = glGetError()){
-		std::cout << "Error: " << error << " " << function << "\n" << file <<":"<< line<< std::endl;
-			
-		return false;
-	}
-	return true;
-}
-
-//Debugging using dbug callback 
-void GLAPIENTRY
-MessageCallback(GLenum source,
-	GLenum type,
-	GLuint id,
-	GLenum severity,
-	GLsizei length,
-	const GLchar* message,
-	const void* userParam)
-{
-	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-		type, severity, message);
-	__debugbreak();
-}
-
+#include "Renderer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "VertexArray.h"
+#include "VertexBufferLayout.h"
 
 
 struct ShaderProgramSource {
@@ -82,6 +51,7 @@ static unsigned int CompileShader( unsigned int type , const std::string& source
 	unsigned int id = glCreateShader(type);
 	
 	const char* src = source.c_str();//this will return a pointer to the beginning of the string (c_str() returns the pointer to the beginning of the string)
+	
 	glShaderSource( id , 1 , &src , nullptr );
 	glCompileShader( id );
 	int result;
@@ -136,7 +106,7 @@ int main(void)
 		return -1;
 	}
 
-	int nrAttributes;
+	//int nrAttributes;
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
@@ -171,32 +141,17 @@ int main(void)
 	glGenVertexArrays(1,&vao);
 	glBindVertexArray(vao);
 	
-	unsigned int buffer;
-	//this will create a buffer and allot it an id   will be stored in buffer(unsigned int)
-	glGenBuffers(1, &buffer);
-	//this will bind the buffer to the array buffer
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	// filling the buffer with data
-	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
-	// will now add the attributes to the buffer
-	glEnableVertexAttribArray(0);
-	//we only have one buffer (vertex tyoe) so we  will only have to use this once, hence 0
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+	
+	VertexArray va;
+	VertexBufferLayout layout;
+	VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+	layout.Push<float>(2);
+	va.AddBuffer(vb, layout);
 
-	//adding the index buffer
-	unsigned int ibo;
-	//this will create a buffer and allot it an id   will be stored in buffer(unsigned int)
-	glGenBuffers(1, &ibo);
-	//this will bind the buffer to the array buffer
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	// filling the buffer with data
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices , GL_STATIC_DRAW);
-
+	IndexBuffer ib(indices, 6);
+	
 	ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
-	/*std::cout << "Vertex Shader" << std::endl;
-	std::cout << source.VertexSource << std::endl; 
-	std::cout << "fragment Shader" << std::endl;
-	std::cout << source.FragmentSource << std::endl;*/
+
 
 
 		
@@ -231,8 +186,9 @@ int main(void)
 
 		glUseProgram(shader);
 		//glBindBuffer(GL_ARRAY_BUFFER, buffer);
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		//glBindVertexArray(vao);
+		va.Bind();
+		ib.Bind();
 		/*glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);*/
 
