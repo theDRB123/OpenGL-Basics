@@ -1,5 +1,8 @@
 #pragma once
 #include <GL/glew.h>
+#include "Shader.h"
+#include "VertexArray.h"
+#include "IndexBuffer.h"
 
 #define ASSERT(x) if (!(x)) __debugbreak(); 
 #define GLCall(x) GLClearError();\
@@ -19,3 +22,10 @@ MessageCallback(GLenum source,
 	GLsizei length,
 	const GLchar* message,
 	const void* userParam);
+
+class Renderer
+{
+public:
+	void Clear() const;
+	void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
+};

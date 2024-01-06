@@ -22,7 +22,13 @@ void main()
 {
 	float x = vertex_pos.x;
 	float y = vertex_pos.y;
-	// color  = vec4( 1 - y*x , 1 + x * 1.44, 1 - x * 1.44 , 1.0);	
-//	color = vec4((1 + u_shift)*x , (1 + u_shift/2)*y , (1 + u_shift/3)*x*y , 0.0f);
-	color = vec4( (1 + u_shift * x ) , (1 - u_shift * y) , (1 + u_shift * x * y) , 1.0f);
+	
+	//float rad = u_shift * (x*x + y*y);
+	float rad = u_shift;
+
+	float X = x*cos(rad) - y*sin(rad);
+	float Y = x*sin(rad) + y*cos(rad);
+	//color = vec4( (x + u_shift)/2 , (-x + u_shift)/2 , (x/2 + u_shift)/2 , 1.0f);
+	color = vec4( X + 0.5, Y  + 0.5, X*Y + 0.5, 1.0f);
+
 };
