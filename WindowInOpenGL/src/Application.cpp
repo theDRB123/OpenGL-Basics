@@ -161,13 +161,11 @@ int main(void)
 	// after using the required shader, we will define the uniforms for it
 	// as it is required that we have a binded shader before we can define the uniforms
 
-	int location = glGetUniformLocation(shader, "u_color");
+	int location = glGetUniformLocation(shader, "u_shift");
 	//ASSERT(location != -1);
-	glUniform4f(location, 0.0f, 0.0f, 0.0f, 1.0f);
+	//glUniform4f(location, 0.0f, 0.0f, 0.0f, 1.0f);
 
-	float red = 0.0f;
-	float blue = 0.0f;
-	float green = 0.0f;
+	float shift_val = 0.0f;
 	float increment = 0.005f;
 
 
@@ -192,16 +190,14 @@ int main(void)
 		/*glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);*/
 
-		glUniform4f(location, red, 0.5, 0.5, 1.0f);
-		if (red> 1.0f) {
+		glUniform1f(location, shift_val);
+		if (shift_val > 0.5f) {
 			increment = -0.005f;
 		}
-		else if (red < 0.0f) {
+		else if (shift_val < -0.5f) {
 			increment = 0.005f;
 		}
-		red += increment;
-		blue += blue*blue*increment*0.001 + increment;
-		green += increment;
+		shift_val += increment;
 
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		//how can i draw a square?
