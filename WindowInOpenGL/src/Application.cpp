@@ -11,7 +11,7 @@
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
 #include "Shader.h"
-
+#include "Texture.h"
 
 
 int main(void)
@@ -43,10 +43,14 @@ int main(void)
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
 	float positions[] = {
-		-1.0f , -1.0f , //index 0
-		1.0f , -1.0f , //index 1
-		1.0f , 1.0f , //index 2
-		-1.0f , 1.0f , //index 3
+		-1.0f , -1.0f , 0.0f , 0.0f ,//index 0
+		1.0f , -1.0f , 1.0f , 0.0f, //index 1
+		1.0f , 1.0f , 1.0f , 1.0f, //index 2
+		-1.0f , 1.0f , 0.0f , 1.0f //index 3
+		//-1.0f , -1.0f ,//index 0
+		//1.0f , -1.0f , //index 1
+		//1.0f , 1.0f , //index 2
+		//-1.0f , 1.0f //index 3
 	};
 
 	unsigned int indices[] = {
@@ -54,7 +58,8 @@ int main(void)
 		2 , 3 , 0 //second triangle
 	};
 
-
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC2_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(MessageCallback, 0);
@@ -62,15 +67,22 @@ int main(void)
 	
 	VertexArray va;
 	VertexBufferLayout layout;
-	VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+	VertexBuffer vb(positions, 4 * 4 * sizeof(float));
+	layout.Push<float>(2);
 	layout.Push<float>(2);
 	va.AddBuffer(vb, layout);
 
 	IndexBuffer ib(indices, 6);
 	Shader shader("res/shaders/Basic.shader");
 	shader.Bind();
+
+	Texture texture("res/textures/duck.png");
+	texture.Bind();
+
+	shader.SetUniform1i("u_Texture",0);
+
 	float shift_val = 0.0f;
-	 float increment = 0.005f;
+	float increment = 0.005f;
 	//float increment = 0.005f;
 
 
@@ -93,9 +105,9 @@ int main(void)
 		}
 		else if (shift_val < 0.0f) {
 			increment = 0.005f;
-		}*/
-		//increment += increment * 0.01;
-		//increment += 0.005f;
+		}*//*
+		increment += increment * 0.01;
+		increment += 0.005f;*/
 		shift_val += increment;
 		std::cout << increment << std::endl;
 		glfwSwapBuffers(window);
